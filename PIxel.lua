@@ -1,30 +1,30 @@
 Pixel = {}
 Pixel.__index = Pixel
 
-function Pixel:new(x, y)
+function Pixel:new(x, y, vx, vy)
     local obj = setmetatable({}, self)
     obj.x = x or 0
     obj.y = y or 0
     obj.r = 1
-    obj.g = 0
+    obj.g = 1
     obj.b = 1
+    obj.vx = vx or 0
+    obj.vy = vy or 0
     obj.speed = 0
     obj.heading = 0
     obj.size = 1 -- Size of the pixel
+    obj.strength = 1000 -- Strength of the pixels
     return obj
 end
 
 function Pixel:move(dt)
-    if self.speed > 0 then
-        -- Update the position based on speed and heading
-        self.x = self.x + math.cos(self.heading) * self.speed * dt
-        self.y = self.y + math.sin(self.heading) * self.speed * dt
-        self.speed = self.speed - 100 * dt -- Decrease speed over time
-    end
+    self.x = self.x + self.vx * dt
+    self.y = self.y + self.vy * dt
+    self.speed = math.sqrt(self.vx * self.vx + self.vy * self.vy)
 end
 
 function Pixel:updateColor(dt)
-    local originalR, originalG, originalB = 1, 1, 1 -- Original color (purple)
+    local originalR, originalG, originalB = self.r, self.g, self.b -- Original color (purple)
     local speedR, speedG, speedB = 1, 0.5, 0.5 -- Speed-based color (reddish)
 
     if self.speed > 0 then
@@ -45,8 +45,8 @@ function Pixel:updateColor(dt)
     end
 end
 
-function Pixel:draw()
+function Pixel:draw(box_x, box_y)
     love.graphics.setColor(self.r, self.g, self.b)
-    love.graphics.setPointSize(self.size) 
-    love.graphics.points(self.x, self.y)
+    love.graphics.setPointSize(self.size) -- Set point size based on pixel size
+    love.graphics.points(box_x + self.x, box_y + self.y)
 end
