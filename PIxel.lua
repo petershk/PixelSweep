@@ -14,6 +14,7 @@ function Pixel:new(x, y, vx, vy)
     obj.heading = 0
     obj.size = 1 -- Size of the pixel
     obj.strength = 1000 -- Strength of the pixels
+    obj.bhDot = nil
     return obj
 end
 
@@ -24,24 +25,34 @@ function Pixel:move(dt)
 end
 
 function Pixel:updateColor(dt)
-    local originalR, originalG, originalB = self.r, self.g, self.b -- Original color (purple)
-    local speedR, speedG, speedB = 1, 0.5, 0.5 -- Speed-based color (reddish)
+    -- Encode bhDot into color for shader use
+    local dot = self.bhDot or 0
+    -- Clamp and normalize bhDot to [-1, 1] for color mapping (adjust 5000 for your game's scale)
+    local t = math.max(-1, math.min(1, dot / 5000))
 
-    if self.speed > 0 then
-        -- Calculate the interpolation factor based on speed
-        local colorFactor = math.min(self.speed / 200, 1) -- Normalize speed to a value between 0 and 1
-
-        -- Lerp between original color and speed-based color
-        self.r = originalR + (speedR - originalR) * colorFactor
-        self.g = originalG + (speedG - originalG) * colorFactor
-        self.b = originalB + (speedB - originalB) * colorFactor
-        self.size = 4 * colorFactor -- Increase size when moving
+    if t > 0 then
+        -- Moving toward: more red
+        self.r = 1
+        self.g = 1 - t
+        self.b = 1 - t
+    elseif t < 0 then
+        -- Moving away: more blue
+        self.r = 1 + t
+        self.g = 1 + t
+        self.b = 1
     else
-        -- Reset to the original color when not moving
-        self.r = originalR
-        self.g = originalG
-        self.b = originalB
-        self.size = 1 -- Reset size when not moving 
+        -- Neutral
+        self.r = 1
+        self.g = 1
+        self.b = 1
+    end
+
+    -- Optionally, size can still depend on speed
+    if self.speed > 0 then
+        local colorFactor = math.min(self.speed / 200, 1)
+        self.size = math.max(2, 8 * colorFactor)
+    else
+        self.size = 2
     end
 end
 

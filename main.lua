@@ -17,6 +17,8 @@ function love.load()
     love.mouse.setVisible(true)
     love.graphics.setPointSize(2)
 
+    pixelShader = love.graphics.newShader("pixelshader.glsl")
+
 end
 
 function love.resize(w, h)
@@ -32,9 +34,12 @@ function love.draw()
     love.graphics.rectangle("line", box_x, box_y, box_width, box_height)
 
     -- Draw pixels
+    love.graphics.setShader(pixelShader)
+    --pixelShader:send("time", love.timer.getTime())
     for _, pixel in ipairs(game.pixels) do
         pixel:draw(box_x, box_y)
     end
+    love.graphics.setShader()
 
     -- Draw black holes
     love.graphics.setColor(1, 0, 0, 0.5)

@@ -47,12 +47,27 @@ function Game:updatePixels(dt, boundingBox)
     local pixelGravityStrength = 10 -- tune this for effect
     for i = #self.pixels, 1, -1 do
         local pixel = self.pixels[i]
+
+        -- Track nearest black hole
+        local nearestBH = nil
+        local minDistSq = math.huge
+        local toBHx, toBHy = 0, 0
         
         -- Apply black hole effects
+        pixel.bhDot = 0
         for _, blackHole in ipairs(self.blackHoles) do
             local bh_dx = blackHole.x - pixel.x
             local bh_dy = blackHole.y - pixel.y
             local bh_distance = math.sqrt(bh_dx * bh_dx + bh_dy * bh_dy)
+
+             -- Track nearest BlackHole
+            local distSq = bh_dx * bh_dx + bh_dy * bh_dy
+            if distSq < minDistSq then
+                minDistSq = distSq
+                nearestBH = blackHole
+                toBHx = bh_dx
+                toBHy = bh_dy
+            end
 
             if bh_distance > 0 then
                 -- Calculate the gravitational force
@@ -72,6 +87,12 @@ function Game:updatePixels(dt, boundingBox)
                 pixel.vy = pixel.vy + (norm_dy * bh_force + tangent_dy) * dt
                 --pixel.x = pixel.x + (norm_dx * bh_force + tangent_dx) * dt
                 --pixel.y = pixel.y + (norm_dy * bh_force + tangent_dy) * dt
+            end
+
+            -- After black hole loop, determine movement direction
+            if nearestBH then
+                local dot = pixel.vx * toBHx + pixel.vy * toBHy
+                pixel.bhDot = dot -- Store for draw
             end
 
             -- Absorb pixel if it gets too close to the black hole
