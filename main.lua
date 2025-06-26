@@ -1,6 +1,8 @@
 _G.love = require("love")
 require("Pixel")
 local Game = require("Game")
+local Menu = require("menu")
+local menu = setmetatable({}, Menu)
 
 game_ready = false
  
@@ -53,6 +55,8 @@ function love.draw()
         deflector:draw(box_x, box_y)
     end
 
+    menu:draw(screen_height)
+
     -- Draw stats
     love.graphics.setColor(255, 255, 255)
     love.graphics.print("Time: " .. game.timePassed, 10, 10)
@@ -72,6 +76,8 @@ function love.update(dt)
     --if game_ready then
         game:updatePixels(dt, boundingBox)
     --end 
+
+    menu:update(dt)
    
     game.timePassed = game.timePassed + dt
 end
@@ -79,17 +85,23 @@ end
 function love.mousepressed(x, y, button, istouch, presses)
     if button == 1 then
         -- Place a black hole with size 20
-        game:addBlackHole(x, y, 10000, 2)
+        game:addBlackHole(x, y, 50000, 2)
     elseif button == 2 then
         -- Place a deflector with size 15
-        game:addDeflector(x, y, 1000, 5)
+        game:addDeflector(x, y, 2000, 5)
     end
     
 end
 
+
+
 function love.keypressed(key)
     if key == "s" then
         game:initializePixels(screen_width, screen_height, box_x, box_y, box_width, box_height)
+    end
+
+    if key == "tab" then
+        menu:toggle()
     end
 end
 

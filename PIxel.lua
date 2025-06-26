@@ -60,4 +60,10 @@ function Pixel:draw(box_x, box_y)
     love.graphics.setColor(self.r, self.g, self.b)
     love.graphics.setPointSize(self.size) -- Set point size based on pixel size
     love.graphics.points(box_x + self.x, box_y + self.y)
+
+    local px = box_x + self.x
+    local py = box_y + self.y
+    local scale = 0.2 -- Adjust for visibility
+    love.graphics.setColor(1, 1, 0, 0.7) -- Yellow, semi-transparent
+    love.graphics.line(px, py, px + self.vx * scale, py + self.vy * scale)
 end
