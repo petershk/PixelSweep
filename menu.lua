@@ -70,6 +70,8 @@ function Menu:update(dt)
 end
 
 function Menu:toggle()
+    local s = menuToggleSound:clone()
+    s:play()
     self.open = not self.open
     self.transitioning = true
     self.targetX = self.open and 0 or -self.width

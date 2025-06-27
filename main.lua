@@ -4,6 +4,8 @@ local Game = require("Game")
 local Menu = require("menu")
 local menu = setmetatable({}, Menu)
 
+menuToggleSound = love.audio.newSource("sounds/menu_toggle.ogg", "static")
+
 game_ready = false
  
 function love.load()
@@ -83,12 +85,18 @@ function love.update(dt)
 end
 
 function love.mousepressed(x, y, button, istouch, presses)
-    if button == 1 then
-        -- Place a black hole with size 20
-        game:addBlackHole(x, y, 50000, 2)
-    elseif button == 2 then
-        -- Place a deflector with size 15
-        game:addDeflector(x, y, 2000, 5)
+    if(menu.open) then
+        for _, btn in ipairs(menu.buttons) do
+            btn:mousepressed(love.mouse.getX() - menu.x, love.mouse.getY(), 1)
+        end
+    else
+        if button == 1 then
+            -- Place a black hole with size 20
+            game:addBlackHole(x, y, 50000, 2)
+        elseif button == 2 then
+            -- Place a deflector with size 15
+            game:addDeflector(x, y, 2000, 5)
+        end
     end
     
 end
@@ -96,12 +104,14 @@ end
 
 
 function love.keypressed(key)
-    if key == "s" then
-        game:initializePixels(screen_width, screen_height, box_x, box_y, box_width, box_height)
+    if not menu.open then
+        if key == "s" then
+            game:initializePixels(screen_width, screen_height, box_x, box_y, box_width, box_height)
+        end
     end
-
     if key == "tab" then
         menu:toggle()
     end
+ 
 end
 
