@@ -4,14 +4,16 @@ local Game = require("Game")
 local Menu = require("menu")
 local menu = setmetatable({}, Menu)
 
+zoom = 1.0
+
 menuToggleSound = love.audio.newSource("sounds/menu_toggle.ogg", "static")
 
 game_ready = false
  
 function love.load()
     screen_width, screen_height = love.graphics.getDimensions()
-    box_width = 2000
-    box_height = 2000
+    box_width = 5000
+    box_height = 4000
     box_x = (screen_width - box_width) / 2
     box_y = (screen_height - box_height) / 2
 
@@ -34,8 +36,13 @@ end
 
 function love.draw()
     -- Draw bounding box centered
+    love.graphics.push()
+    --love.graphics.translate((1 - zoom) * love.mouse.getX() / zoom, (1 - zoom) * love.mouse.getY() / zoom)
+    love.graphics.scale(zoom, zoom)
     love.graphics.setColor(0, 1, 0, 1)
     love.graphics.rectangle("line", box_x, box_y, box_width, box_height)
+
+    
 
     -- Draw pixels
     love.graphics.setShader(pixelShader)
@@ -57,6 +64,8 @@ function love.draw()
         deflector:draw(box_x, box_y)
     end
 
+    love.graphics.pop()
+
     menu:draw(screen_height)
 
     -- Draw stats
@@ -75,15 +84,30 @@ function love.update(dt)
         xMax = box_x + box_width,
         yMax = box_y + box_height
     }
-    --if game_ready then
-        game:updatePixels(dt, boundingBox)
-    --end 
+
+    if isPanning then
+        local mx, my = love.mouse.getPosition()
+        -- Adjust for zoom!
+        box_x = boxStartX + (mx - panStartX) / zoom
+        box_y = boxStartY + (my - panStartY) / zoom
+    end
+    
+    for _, deflector in ipairs(game.deflectors) do
+        deflector:update(dt)
+    end
+    game:updatePixels(dt, boundingBox)
+    
 
     menu:update(dt)
    
     game.timePassed = game.timePassed + dt
 end
 
+isPanning = false
+panStartX = 0
+panStartY = 0
+boxStartX = 0
+boxStartY = 0
 function love.mousepressed(x, y, button, istouch, presses)
     if(menu.open) then
         for _, btn in ipairs(menu.buttons) do
@@ -91,17 +115,51 @@ function love.mousepressed(x, y, button, istouch, presses)
         end
     else
         if button == 1 then
-            -- Place a black hole with size 20
-            game:addBlackHole(x, y, 50000, 2)
+            -- Adjust for zoom
+            local wx = x / zoom
+            local wy = y / zoom
+            game:addBlackHole(wx, wy, 500000, 60)
         elseif button == 2 then
-            -- Place a deflector with size 15
-            game:addDeflector(x, y, 2000, 5)
+            local wx = x / zoom
+            local wy = y / zoom
+            game:addDeflector(wx, wy, 20000, 50)
+        elseif button == 3 then
+            -- Start panning
+            isPanning = true
+            panStartX = x  
+            panStartY = y
+            boxStartX = box_x
+            boxStartY = box_y
         end
     end
-    
 end
 
+function love.mousereleased(x, y, button, istouch, presses)
+    if button == 3 then
+        isPanning = false
+    end
+end
 
+function love.wheelmoved(x, y)
+    if y == 0 then return end
+
+    local mx, my = love.mouse.getPosition()
+    -- World coordinate under mouse BEFORE zoom
+    local world_x = (mx / zoom) - box_x
+    local world_y = (my / zoom) - box_y
+
+    -- Adjust zoom
+    if y > 0 then
+        zoom = zoom * 1.1
+    elseif y < 0 then
+        zoom = zoom / 1.1
+    end
+    zoom = math.max(0.1, math.min(zoom, 10))
+
+    -- Adjust box_x and box_y so the same world point stays under the mouse
+    box_x = (mx / zoom) - world_x
+    box_y = (my / zoom) - world_y
+end
 
 function love.keypressed(key)
     if not menu.open then

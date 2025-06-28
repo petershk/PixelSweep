@@ -7,21 +7,22 @@ function Deflector:new(x, y, strength, size)
     obj.y = y or 0
     obj.strength = strength or 1000
     obj.size = size or 15
+    obj.range = obj.size * 5 -- Range is 5x the size
     obj.phase = love.math.random() * 2 * math.pi -- Unique phase for each deflector
     return obj
 end
 
 function Deflector:update(dt)
     -- Example: pulse strength
-    local base_strength = 100
-    local pulse_amount = 50
-    self.strength = base_strength + math.sin(love.timer.getTime() * 2 + self.phase) * pulse_amount
+    --ocal base_strength = 100
+    --local pulse_amount = 50
+    --self.strength = base_strength + math.sin(love.timer.getTime() * 2 + self.phase) * pulse_amount
 end
 
 function Deflector:draw(box_x, box_y)
     -- Draw range
-    love.graphics.setColor(0, 0.5, 1, 0.2)
-    love.graphics.circle("line", box_x + self.x, box_y + self.y, self.size * 5)
+    love.graphics.setColor(0, 0.5, 1, 0.8)
+    love.graphics.circle("line", box_x + self.x, box_y + self.y, self.range)
     -- Draw deflector
     love.graphics.setColor(0, 0, 1, 0.5)
     love.graphics.circle("fill", box_x + self.x, box_y + self.y, self.size)
