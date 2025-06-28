@@ -4,6 +4,9 @@ local Game = require("Game")
 local Menu = require("menu")
 local menu = setmetatable({}, Menu)
 
+local Player = require("Player")
+player = Player:new()
+
 zoom = 1.0
 
 menuToggleSound = love.audio.newSource("sounds/menu_toggle.ogg", "static")
@@ -12,13 +15,14 @@ game_ready = false
  
 function love.load()
     screen_width, screen_height = love.graphics.getDimensions()
-    box_width = 5000
-    box_height = 4000
+    box_width = 1000
+    box_height = 800
     box_x = (screen_width - box_width) / 2
     box_y = (screen_height - box_height) / 2
 
-    game = Game:new(1000)
-    game:initializePixels(screen_width, screen_height, box_x, box_y, box_width, box_height)
+    game = Game:new(10)
+   -- game:initializePixels(screen_width, screen_height, box_x, box_y, box_width, box_height)
+    game:initializeStableUniverse(box_width, box_height, 100, 100)
 
     love.mouse.setVisible(true)
     love.graphics.setPointSize(2)
@@ -70,6 +74,8 @@ function love.draw()
 
     -- Draw stats
     love.graphics.setColor(255, 255, 255)
+    love.graphics.print("Credits: " .. player.credits, 10, 110)
+    love.graphics.print("Score: " .. player.score, 10, 130)
     love.graphics.print("Time: " .. game.timePassed, 10, 10)
     love.graphics.print("FPS: " .. love.timer.getFPS(), 10, 30)
     love.graphics.print("Pixels: " .. #game.pixels, 10, 50)
@@ -118,11 +124,17 @@ function love.mousepressed(x, y, button, istouch, presses)
             -- Adjust for zoom
             local wx = x / zoom
             local wy = y / zoom
-            game:addBlackHole(wx, wy, 500000, 60)
+            if(player.credits >= 3) then
+                game:addBlackHole(wx, wy, 50000000, 10)
+                player.credits = player.credits - 3
+            end
         elseif button == 2 then
-            local wx = x / zoom
-            local wy = y / zoom
-            game:addDeflector(wx, wy, 20000, 50)
+                local wx = x / zoom
+                local wy = y / zoom
+            if(player.credits >= 1) then
+                game:addDeflector(wx, wy, 20000000, 50)
+                player.credits = player.credits - 1
+            end
         elseif button == 3 then
             -- Start panning
             isPanning = true

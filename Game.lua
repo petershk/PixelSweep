@@ -2,6 +2,7 @@ local Game = {}
 local Deflector = require("Deflector")
 local BlackHole = require("BlackHole")
 
+
 function Game:new(maxPixels)
     local obj = {
         pixels = {},
@@ -22,6 +23,24 @@ function Game:initializePixels(screen_width, screen_height, box_x, box_y, box_wi
         local rel_x = love.math.random(0, box_width)
         local rel_y = love.math.random(0, box_height)
         table.insert(self.pixels, Pixel:new(rel_x, rel_y))
+    end
+end
+
+function Game:initializeStableUniverse(box_width, box_height, pixel_count, min_dist)
+    self.pixels = {}
+    local cols = math.ceil(math.sqrt(pixel_count))
+    local rows = math.ceil(pixel_count / cols)
+    local spacing_x = box_width / (cols + 1)
+    local spacing_y = box_height / (rows + 1)
+    local idx = 1
+    for i = 1, cols do
+        for j = 1, rows do
+            if idx > pixel_count then break end
+            local x = i * spacing_x
+            local y = j * spacing_y
+            table.insert(self.pixels, Pixel:new(x, y, 0, 0))
+            idx = idx + 1
+        end
     end
 end
 
@@ -97,6 +116,9 @@ function Game:handlePixelAbsorption(pixel, blackHole)
     blackHole.strength = blackHole.strength + pixel.strength
     blackHole.size = blackHole.size + pixel.size / 10
     blackHole.range = blackHole.size * 10
+
+    player.score = player.score + pixel.size
+    --player.credits = player.credits + 1
     --if blackHole.size > 60 then
     --    blackHole.size = 30
     --end

@@ -12,5 +12,9 @@ function Player:new(x, y)
     obj.dt = 0
     obj.sweepRadius = 200 -- Radius of the sweeping sphere
     obj.pushStrength = 300 -- Strength of the push effect
+    obj.credits = 10 --Starting credits
+    obj.score = 0 -- Starting score
     return obj
 end 
+
+return Player
